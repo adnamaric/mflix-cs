@@ -52,9 +52,9 @@ namespace M220N.Repositories
         {
             // TODO Ticket: User Management
             // Retrieve the user document corresponding with the user's email.
-            //
-            // // return await _usersCollection.Find(...)
-            return null;
+         
+            return await _usersCollection.Find(Builders<User>.Filter.Eq("email", email)).FirstOrDefaultAsync();
+                
         }
 
         /// <summary>
@@ -70,20 +70,23 @@ namespace M220N.Repositories
         {
             try
             {
-                var user = new User();
+
                 // TODO Ticket: User Management
                 // Create a user with the "Name", "Email", and "HashedPassword" fields.
                 // DO NOT STORE CLEAR-TEXT PASSWORDS! Instead, use the helper class
                 // we have created for you: PasswordHashOMatic.Hash(password)
                 //
-                // // user = new User...
-                // // await _usersCollection.InsertOneAsync(...)
+                string hash = PasswordHashOMatic.Hash(password);
+                var user = new User() { Name = name, Email = email, HashedPassword = hash };
+                await _usersCollection.InsertOneAsync(user);
+                var newUser = await GetUserAsync(user.Email, cancellationToken);
+                
+                
                 //
                 // // TODO Ticket: Durable Writes
                 // // To use a more durable Write Concern for this operation, add the 
                 // // .WithWriteConcern() method to your InsertOneAsync call.
 
-                var newUser = await GetUserAsync(user.Email, cancellationToken);
                 return new UserResponse(newUser);
             }
             catch (Exception ex)
@@ -216,17 +219,22 @@ namespace M220N.Repositories
                   Update the "preferences" field in the corresponding user's document to
                   reflect the new information in preferences.
                 */
-
+                User user = GetUserAsync(email).Result;
+                if (user != null)
+                {
+                    await _usersCollection.UpdateOneAsync(new BsonDocument(),Builders<User>.Update.Set("preferences", preferences));
+                }
                 UpdateResult updateResult = null;
+
+                
                 // TODO Ticket: User Preferences
                 // Use the data in "preferences" to update the user's preferences.
                 //
-                // updateResult = await _usersCollection.UpdateOneAsync(
-                //    new BsonDocument(),
-                //    Builders<User>.Update.Set("TODO", preferences),
+                
+                //    Builders<User>.Update.Set("TODO", preferences)
                 //    /* Be sure to pass a new UpdateOptions object here,
-                //       setting IsUpsert to false! */
-                //    new UpdateOptions(),
+                ////       setting IsUpsert to false! */
+                //    new UpdateOptions(updateResult),
                 //    cancellationToken);
 
                 return updateResult.MatchedCount == 0
