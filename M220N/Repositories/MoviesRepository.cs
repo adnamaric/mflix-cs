@@ -114,6 +114,24 @@ namespace M220N.Repositories
             params string[] countries
             )
         {
+            try
+            {
+                return await _moviesCollection
+                    .Find(Builders<Movie>.Filter.In("countries", countries))
+                    .SortByDescending(m => m.Title)
+                    .Project<MovieByCountryProjection>(Builders<Movie>.Projection.Include(m => m.Title))
+                    .ToListAsync(cancellationToken);
+            }
+
+            catch (Exception ex)
+            {
+                // TODO Ticket: Error Handling
+                // Catch the exception and check the exception type and message contents.
+                // Return null if the exception is due to a bad/missing Id. Otherwise,
+                // throw.
+
+                throw;
+            }
             // TODO Ticket: Projection - Search for movies by ``country`` and use projection to
             // return only the ``Id`` and ``Title`` fields
             //
