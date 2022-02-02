@@ -57,7 +57,7 @@ namespace M220N.Controllers
         public async Task<ActionResult> UpdateCommentAsync([FromBody] MovieCommentInput input)
         {
             var user = await UserController.GetUserFromTokenAsync(_userRepository, Request);
-
+            
             var movieId = new ObjectId(input.MovieId);
             var commentId = new ObjectId(input.CommentId);
             var result = await _commentsRepository.UpdateCommentAsync(user, movieId, commentId, input.UpdatedComment);
