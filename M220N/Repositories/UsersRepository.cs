@@ -221,18 +221,22 @@ namespace M220N.Repositories
                   Update the "preferences" field in the corresponding user's document to
                   reflect the new information in preferences.
                 */
-                User user = GetUserAsync(email).Result;
-                if (user != null)
-                {
-                    await _usersCollection.UpdateOneAsync(new BsonDocument(),Builders<User>.Update.Set("preferences", preferences), new UpdateOptions { IsUpsert=false}, cancellationToken);
-                }
-                UpdateResult updateResult = null;
+                //User user = GetUserAsync(email).Result;
+                //if (user != null)
+                //{
+                //    await _usersCollection.UpdateOneAsync(new BsonDocument(),Builders<User>.Update.Set("preferences", preferences), new UpdateOptions { IsUpsert=false},cancellationToken);
+                //}
+               
+                UpdateResult updateResult = await _usersCollection.UpdateOneAsync(
+                Builders<User>.Filter.Eq(u => u.Email, email),
+                Builders<User>.Update.Set(u => u.Preferences, preferences),
+                new UpdateOptions { IsUpsert=false},
+                cancellationToken: cancellationToken);
 
-                
                 // TODO Ticket: User Preferences
                 // Use the data in "preferences" to update the user's preferences.
                 //
-                
+
                 //    Builders<User>.Update.Set("TODO", preferences)
                 //    /* Be sure to pass a new UpdateOptions object here,
                 ////       setting IsUpsert to false! */
