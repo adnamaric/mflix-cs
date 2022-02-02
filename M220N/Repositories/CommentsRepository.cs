@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using M220N.Models;
@@ -130,11 +131,15 @@ namespace M220N.Repositories
                 // Return the 20 users who have commented the most on MFlix. You will need to use
                 // the Group, Sort, Limit, and Project methods of the Aggregation pipeline.
                 //
-                // // result = await _commentsCollection
-                // //   .WithReadConcern(...)
-                // //   .Aggregate()
-                // //   .Group(...)
-                // //   .Sort(...).Limt(...).Project(...).ToListAsync()
+
+                result = await _commentsCollection
+                    .WithReadConcern(ReadConcern.Majority)
+                    .Aggregate()
+                    .Group(c => c.Email, g => new { Id = g.Key, Count = g.Count() })
+                    .SortByDescending(g => g.Count)
+                    .Limit(20)
+                    .Project(p => new ReportProjection { Id = p.Id, Count = p.Count })
+                    .ToListAsync();
 
                 return new TopCommentsProjection(result);
             }
