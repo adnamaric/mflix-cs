@@ -134,8 +134,10 @@ namespace M220N.Repositories
                 //  new BsonDocument(...),
                 //  Builders<Session>.Update.Set(...).Set(...),
                 //  new UpdateOptions(...));
-
                 storedUser.AuthToken = user.AuthToken;
+
+                 await _sessionsCollection.Find(Builders<Session>.Filter.Eq("user_id", user.Id)).FirstOrDefaultAsync();
+                await _sessionsCollection.UpdateOneAsync(new BsonDocument(), Builders<Session>.Update.Set("user_id", storedUser.Id).Set("Jwt", storedUser.AuthToken), new UpdateOptions { IsUpsert=true});
                 return new UserResponse(storedUser);
             }
             catch (Exception ex)
@@ -156,7 +158,7 @@ namespace M220N.Repositories
             // TODO Ticket: User Management
             // Delete the document in the `sessions` collection matching the email.
             
-            await _sessionsCollection.DeleteOneAsync(new BsonDocument(), cancellationToken);
+            await _sessionsCollection.DeleteOneAsync(new BsonDocument("user_id", email), cancellationToken);
             return new UserResponse(true, "User logged out.");
         }
 
@@ -170,7 +172,7 @@ namespace M220N.Repositories
         {
             // TODO Ticket: User Management
             // Retrieve the session document corresponding with the user's email.
-            return await _sessionsCollection.Find(new BsonDocument()).FirstOrDefaultAsync();
+            return await _sessionsCollection.Find(new BsonDocument("user_id",email)).FirstOrDefaultAsync();
         }
 
         /// <summary>
@@ -222,7 +224,7 @@ namespace M220N.Repositories
                 User user = GetUserAsync(email).Result;
                 if (user != null)
                 {
-                    await _usersCollection.UpdateOneAsync(new BsonDocument(),Builders<User>.Update.Set("preferences", preferences));
+                    await _usersCollection.UpdateOneAsync(new BsonDocument(),Builders<User>.Update.Set("preferences", preferences), new UpdateOptions { IsUpsert=false}, cancellationToken);
                 }
                 UpdateResult updateResult = null;
 
