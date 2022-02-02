@@ -78,7 +78,7 @@ namespace M220N.Repositories
                 //
                 string hash = PasswordHashOMatic.Hash(password);
                 var user = new User() { Name = name, Email = email, HashedPassword = hash };
-                await _usersCollection.InsertOneAsync(user);
+                await _usersCollection.WithWriteConcern(WriteConcern.WMajority).InsertOneAsync(user);
                 var newUser = await GetUserAsync(user.Email, cancellationToken);
                 
                 
