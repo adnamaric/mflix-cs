@@ -18,7 +18,7 @@ namespace Migrator
         static IMongoCollection<Movie> _moviesCollection;
 
         // TODO: Update this connection string as needed.
-        static string mongoConnectionString = "";
+        static string mongoConnectionString = "mongodb+srv://adna:adna@mflix.t0vct.mongodb.net/sample_mflix?retryWrites=true&w=majority";
         
         static async Task Main(string[] args)
         {
@@ -36,8 +36,9 @@ namespace Migrator
                 // (https://mongodb.github.io/mongo-csharp-driver/2.12/apidocs/html/T_MongoDB_Driver_ReplaceOneModel_1.htm).
                 //
                 // // bulkWriteDatesResult = await _moviesCollection.BulkWriteAsync(...
-
-                Console.WriteLine($"{bulkWriteDatesResult.ProcessedRequests.Count} records updated.");
+                
+                bulkWriteDatesResult = await _moviesCollection.BulkWriteAsync(  datePipelineResults.Select(updatedMovie => new ReplaceOneModel<Movie>(
+                     new FilterDefinitionBuilder<Movie>().Where(m => m.Id == updatedMovie.Id),updatedMovie)));
             }
 
             var ratingPipelineResults = TransformRatingPipeline();
@@ -51,6 +52,11 @@ namespace Migrator
                 // (https://mongodb.github.io/mongo-csharp-driver/2.12/apidocs/html/T_MongoDB_Driver_ReplaceOneModel_1.htm).
                 //
                 // // bulkWriteRatingsResult = await _moviesCollection.BulkWriteAsync(...
+
+                var list = new List<ReplaceOneModel<Movie>>();
+                ratingPipelineResults.ForEach(y => list.Add(new ReplaceOneModel<Movie>(Builders<Movie>.Filter.Eq(f => f.Id, y.Id), y) { IsUpsert = true }));
+                bulkWriteRatingsResult = await _moviesCollection.BulkWriteAsync(list, new BulkWriteOptions() { IsOrdered = false });
+
 
                 Console.WriteLine($"{bulkWriteRatingsResult.ProcessedRequests.Count} records updated.");
             }
