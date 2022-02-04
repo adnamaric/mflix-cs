@@ -4,7 +4,7 @@ namespace M220NTests
 {
     public static class Constants
     {
-        public static string MongoDbConnectionUriWithMaxPoolSize = MongoDbConnectionUri() + "&maxPoolSize=5";
+        public static string MongoDbConnectionUriWithMaxPoolSize = MongoDbConnectionUri() + "&maxPoolSize=50";
 
         public static string MongoDbConnectionUri()
         {

@@ -186,7 +186,7 @@ namespace M220NTests
 
             _movieRepository = new MoviesRepository(_client);
             var config = _movieRepository.GetConfig();
-            Assert.AreEqual(5, config.Settings.MaxConnectionPoolSize);
+            Assert.AreEqual(50, config.Settings.MaxConnectionPoolSize);
             Assert.AreEqual(2500, config.Settings.WriteConcern.WTimeout.Value.TotalMilliseconds);
         }
 
